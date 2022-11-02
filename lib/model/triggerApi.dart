@@ -8,20 +8,29 @@ import 'api_model.dart';
 Future<LED1> fetchApi() async {
   final response = await http.get(
     Uri.parse(
-        'https://iotmachlab.000webhostapp.com/api/LED_1/update.php?id=1&status=on'),
+        'https://iotmachlab.000webhostapp.com/api/LED_1/read_all.php?id=1'),
   );
 
   if (response.statusCode == 200) {
     return LED1.fromJson(jsonDecode(response.body));
   } else {
-    throw Exception('Failed to load album');
+    throw Exception('Failed to load');
   }
 }
 
 Future<LED1> updateApi(String status) async {
   final response = await http.put(
     Uri.parse(
-        'https://iotmachlab.000webhostapp.com/api/LED_1/update.php?id=1&status=$status'),
+        'https://iotmachlab.000webhostapp.com/api/LED_1/read_all.php?id=1'),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, dynamic>{
+      "success": 1,
+      "LED_1": [
+        {"id": "1", "status": status}
+      ]
+    }),
   );
 
   if (response.statusCode == 200) {
@@ -63,9 +72,7 @@ class _TriggerApiState extends State<TriggerApi> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       // Text(snapshot.data!.success.toString()),
-                      toggle
-                          ? Text(snapshot.data!.message.toString())
-                          : Text("Api Off"),
+                      Text(snapshot.data!.LED_1[0]['status'].toString()),
                       ElevatedButton(
                         onPressed: () {
                           if (toggle == false) {
