@@ -18,26 +18,11 @@ Future<LED1> fetchApi() async {
   }
 }
 
-Future<LED1> updateApi(String status) async {
-  final response = await http.put(
+void updateApi(String status) async {
+  final response = await http.read(
     Uri.parse(
-        'https://iotmachlab.000webhostapp.com/api/LED_1/read_all.php?id=1'),
-    headers: <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
-    },
-    body: jsonEncode(<String, dynamic>{
-      "success": 1,
-      "LED_1": [
-        {"id": "1", "status": status}
-      ]
-    }),
+        'https://iotmachlab.000webhostapp.com/api/LED_1/update.php?id=1&status=$status'),
   );
-
-  if (response.statusCode == 200) {
-    return LED1.fromJson(jsonDecode(response.body));
-  } else {
-    throw Exception('Failed to update');
-  }
 }
 
 class TriggerApi extends StatefulWidget {
@@ -49,11 +34,13 @@ class TriggerApi extends StatefulWidget {
 
 class _TriggerApiState extends State<TriggerApi> {
   late Future<LED1> _futureAlbum;
+
   bool toggle = false;
   @override
   void initState() {
     super.initState();
     _futureAlbum = fetchApi();
+    updateApi('off');
   }
 
   @override
@@ -70,26 +57,29 @@ class _TriggerApiState extends State<TriggerApi> {
                 if (snapshot.hasData) {
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
+                    children: [
                       // Text(snapshot.data!.success.toString()),
                       Text(snapshot.data!.LED_1[0]['status'].toString()),
                       ElevatedButton(
                         onPressed: () {
-                          if (toggle == false) {
+                          if (snapshot.data!.LED_1[0]['status'].toString() ==
+                              'off') {
                             setState(() {
-                              _futureAlbum = updateApi('on');
+                              _futureAlbum = fetchApi();
+                              updateApi("on");
                               toggle = true;
                             });
                           } else {
                             setState(() {
-                              _futureAlbum = updateApi('off');
+                              _futureAlbum = fetchApi();
+                              updateApi("off");
                               toggle = false;
                             });
                           }
                         },
                         style: ElevatedButton.styleFrom(
                             backgroundColor:
-                                toggle ? Colors.black : Colors.green),
+                                toggle ? Colors.green : Colors.black),
                         child: const Text('Update Data'),
                       ),
                     ],
